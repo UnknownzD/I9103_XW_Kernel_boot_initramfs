@@ -63,7 +63,8 @@ for file in ./*; do
 		copy_file busybox /system/bin/$file 2
 	fi
 done
-	
+
+sysctl -p /sysctl.conf	
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d /system/etc/init.d ]; then
