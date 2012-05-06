@@ -35,23 +35,28 @@ copy_file ()
 	elif [ $3 -eq 2 ]; then
 		if !([ -h $2 ] && [ $(eval readlink $2) == '$1' ]); then
 			write_file=2;
+		else
+			write_file=3;
 		fi
 	fi
 	if [ $write_file -eq 1 ]; then
 		del_file $2
 		$busybox cp -f $1 $2 >/dev/null 2>&1
-		$busybox chown $5 $2 >/dev/null 2>&1
-		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
 		del_file $2
 		$busybox ln -f -s $1 $2 >/dev/null 2>&1
+	fi
+	if [ $write_file -lt 2 ]; then
+		$busybox chown $5 $2 >/dev/null 2>&1
+		$busybox chmod $4 $2 >/dev/null 2>&1
 	fi
 }
 
 $busybox mount -o remount,rw /system
 
 ##### Install SU #####
-copy_file /sbin/su /system/bin/su 0 4755 0:2000
+# Mode 6755 = SetUID, SetGID and 755 access right
+copy_file /sbin/su /system/bin/su 0 6755 0:2000
 copy_file /sbin/Superuser.apk /system/app/Superuser.apk 1 644 0:0
 copy_file /system/bin/su /system/xbin/su 2
 
