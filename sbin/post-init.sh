@@ -33,7 +33,8 @@ copy_file ()
 			write_file=1;
 		fi
 	elif [ $3 -eq 2 ]; then
-		if !([ -h $2 ] && [ $(eval readlink $2) == '$1' ]); then
+		# Do NOT change the following line to use single qoute instead of double quote, which disabled the variable evaluation
+		if !([ "$(eval readlink $2)" == "$1" ]); then
 			write_file=2;
 		else
 			write_file=3;
@@ -47,7 +48,6 @@ copy_file ()
 		$busybox chown $5 $2 >/dev/null 2>&1
 		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
-		del_file $2
 		$busybox ln -f -s $1 $2 >/dev/null 2>&1
 	fi
 }
@@ -64,8 +64,8 @@ copy_file /system/bin/su /system/xbin/su 2
 copy_file /sbin/busybox /system/bin/busybox 0 755 0:0
 cd /sbin/
 for file in ./*; do
-	if [ -h $file ] && [ $(eval readlink $file) == 'busybox' ]; then 
-		copy_file busybox /system/bin/$file 2
+	if [ "$(eval readlink $file)" == 'busybox' ]; then 
+		copy_file /system/bin/busybox /system/bin/$file 2
 	fi
 done
 
