@@ -39,16 +39,16 @@ copy_file ()
 			write_file=3;
 		fi
 	fi
-	if [ $write_file -eq 1 ]; then
-		del_file $2
-		$busybox cp -f $1 $2 >/dev/null 2>&1
+	if [ $write_file -lt 2 ]; then
+		if [ $write_file -eq 1 ]; then
+			del_file $2
+			$busybox cp -f $1 $2 >/dev/null 2>&1
+		fi
+		$busybox chown $5 $2 >/dev/null 2>&1
+		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
 		del_file $2
 		$busybox ln -f -s $1 $2 >/dev/null 2>&1
-	fi
-	if [ $write_file -lt 2 ]; then
-		$busybox chown $5 $2 >/dev/null 2>&1
-		$busybox chmod $4 $2 >/dev/null 2>&1
 	fi
 }
 
