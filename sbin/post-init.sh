@@ -49,11 +49,12 @@ copy_file ()
 		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
 		$busybox rm -rf $1 >/dev/null 2>&1
-		$busybox ln -f -s $1 $2 >/dev/null 2>&1
+		$busybox ln -fs $1 $2 >/dev/null 2>&1
 	fi
 }
 
 $busybox mount -o remount,rw /system
+$busybox mount -o remount,rw /data
 
 ##### Install SU #####
 # Mode 6755 = SetUID, SetGID and 755 access right
@@ -71,8 +72,8 @@ for file in ./*; do
 done
 
 ##### Install voodoo sound control #####
-if [ ! -f "$(eval find /data/app | grep '/data/app/org.projectvoodoo.controlapp')" ]; then
-copy_file /sbin/org.projectvoodoo.controlapp.apk /data/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+copy_file /sbin/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
 fi
 
 ##### Load configuration #####
