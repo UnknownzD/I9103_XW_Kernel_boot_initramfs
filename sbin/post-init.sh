@@ -48,6 +48,7 @@ copy_file ()
 		$busybox chown $5 $2 >/dev/null 2>&1
 		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
+		$busybox rm -rf $1 >/dev/null 2>&1
 		$busybox ln -f -s $1 $2 >/dev/null 2>&1
 	fi
 }
