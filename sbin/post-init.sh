@@ -25,11 +25,11 @@ copy_file ()
 {
 	local write_file=0;
 	if [ $3 -eq 0 ]; then
-		if [ ! -x $2 ]; then
+		if [ ! -x "$2" ]; then
 			write_file=1;
 		fi
 	elif [ $3 -eq 1 ]; then
-		if [ ! -f $2 ]; then
+		if [ ! -f "$2" ]; then
 			write_file=1;
 		fi
 	elif [ $3 -eq 2 ]; then
@@ -66,20 +66,22 @@ copy_file /sbin/busybox /system/bin/busybox 0 755 0:0
 cd /sbin/
 for file in ./*; do
 	if [ "$(eval readlink $file)" == 'busybox' ]; then 
-		copy_file /system/bin/busybox /system/bin/$file 2
+		copy_file busybox /system/bin/$file 2
 	fi
 done
 
 ##### Install voodoo sound control #####
-copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+if [ ! -f "$(eval find /data/app | grep '/data/app/org.projectvoodoo.controlapp')" ]; then
+copy_file /sbin/org.projectvoodoo.controlapp.apk /data/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+fi
 
 ##### Load configuration #####
 sysctl -p /sysctl.conf	
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
-if [ -d /system/etc/init.d ]; then
+if [ -d '/system/etc/init.d' ]; then
     for file in /system/etc/init.d/* ; do
-	if [ -f $file ]; then
+	if [ -f "$file" ]; then
 		/system/bin/sh "$file" >/dev/null 2>&1
 	fi
     done
