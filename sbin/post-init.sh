@@ -56,7 +56,7 @@ $busybox mount -o remount,rw /system
 
 ##### Install SU #####
 # Mode 6755 = SetUID, SetGID and 755 access right
-copy_file /sbin/su /system/bin/su 0 6755 0:2000
+copy_file /sbin/su /system/bin/su 0 6755 0:0
 copy_file /sbin/Superuser.apk /system/app/Superuser.apk 1 644 0:0
 copy_file /system/bin/su /system/xbin/su 2
 
@@ -69,6 +69,10 @@ for file in ./*; do
 	fi
 done
 
+##### Install voodoo sound control #####
+copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+
+##### Load configuration #####
 sysctl -p /sysctl.conf	
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
