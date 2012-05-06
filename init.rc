@@ -176,7 +176,6 @@ on post-fs
     mkdir /data/app-private 0771 system system
     mkdir /data/app 0771 system system
     mkdir /data/property 0700 root root
-    mkdir /data/misc/radio 0774 radio radio
 
     # create log system
     mkdir /data/log 0775 system system
@@ -468,7 +467,7 @@ service keystore /system/bin/keystore /data/misc/keystore
     user keystore
     group keystore
     socket keystore stream 666
-ls
+
 service dumpstate /system/bin/dumpstate -s
     socket dumpstate stream 0660 shell log
     disabled
