@@ -11,27 +11,52 @@ sleep 3
 #####echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb;
 #####echo "2048" > /sys/devices/virtual/bdi/7:0/read_ahead_kb
 
-##### Install SU #####
+del_file()
+{
+	$busybox chmod -R 777 $1 >/dev/null 2>&1
+	$busybox rm -rf $1 >/dev/null 2>&1
+}
+
+# install_file (src,dest,type,mode,owner);
+# type 0 = executable
+# type 1 = regular file
+# type 2 = link file
+copy_file ()
+{
+	local write_file=0;
+	if [ $3 -eq 0 ]; then
+		if [ ! -x $2 ]; then
+			write_file=1;
+		fi
+	elif [ $3 -eq 1 ]; then
+		if[ ! -f $2 ]; then
+			write_file=1;
+		fi
+	elif [ $3 -eq 2 ]; then
+		if [ ! -h $2 ]; then
+			write_file=2;
+		fi
+	fi
+	if [ $write_file -eq 1 ]; then
+		del_file $2
+		$busybox cp -f -$1 $2 >/dev/null 2>&1
+		$busybox chown $5 $2 >/dev/null 2>&1
+		$busybox chmod $4 $2 >/dev/null 2>&1
+	elif [ $write_file -eq 2 ]; then
+		del_file $2
+		$busybox ln -s $1 $2 >/dev/null 2>&1
+	fi
+}
 
 $busybox mount -o remount,rw /system
-if [ ! -x /system/bin/su ]; then
-	$busybox chmod -R 777 /system/bin/su
-	$busybox rm -rf /system/bin/su
-	$busybox cp /sbin/su /system/bin/su
-	$busybox chown 0:0 /system/bin/su
-	$busybox chmod 4755 /system/bin/su
-fi
-if [ ! -e /system/app/Superuser.apk ]; then
-	$busybox chmod -R 777 /system/bin/su
-	$busybox rm -rf /system/app/Superuser.apk
-	$busybox cp /sbin/Superuser.apk /system/app/Superuser.apk
-	$busybox chown 644 /system/app/Superuser.apk
-fi
-if [ ! -h /system/xbin/su ]; then
-	$busybox chmod -R 777 /system/xbin/su
-	$busybox rm -rf /system/xbin/su
-	$busybox ln -s /system/bin/su /system/xbin/su
-fi
+
+##### Install SU #####
+copy_file /sbin/su /system/bin/su 0 4755 0:2000
+copy_file /sbin/Superuser.apk /system/app/Superuser.apk 1 644 0:0
+copy_file /system/bin/su /system/xbin/su 3
+
+##### Install busybox #####
+copy_file /sbin/busybox /system/xbin/busybox 0 755 0:0
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [-d /system/etc/init.d]; then
@@ -42,13 +67,4 @@ if [-d /system/etc/init.d]; then
     done
 fi
 
-##### Install busybox #####
-if [ ! -x /system/xbin/busybox]; then
-	$busybox chmod -R 777 /system/xbin/busybox
-	$busybox cp /sbin/busybox /system/xbin/busybox
-	$busybox chown 0:0 /system/xbin/busybox
-	$busybox chmod 755 /system/xbin/busybox
-fi
-
 $busybox mount -o remount,ro /system
-
