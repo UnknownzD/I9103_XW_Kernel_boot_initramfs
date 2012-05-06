@@ -72,7 +72,9 @@ for file in ./*; do
 done
 
 ##### Install voodoo sound control #####
+if [ ! -f "$(eval find /data/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
 copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+fi
 copy_file /sbin/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
 fi
 
