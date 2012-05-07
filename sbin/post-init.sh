@@ -64,6 +64,10 @@ copy_file /system/bin/su /system/xbin/su 2
 
 ##### Install busybox #####
 copy_file /sbin/busybox /system/bin/busybox 0 755 0:0
+copy_file /sbin/e2fsck /system/bin/e2fsck 0 755 0:0
+copy_file /sbin/mke2fs /system/bin/mke2fs 0 755 0:0
+copy_file /sbin/parted /system/bin/parted 0 755 0:0
+copy_file /sbin/tune2fs /system/bin/tune2fs 0 755 0:0
 cd /sbin/
 for file in ./*; do
 	if [ "$(eval readlink $file)" == 'busybox' ]; then 
