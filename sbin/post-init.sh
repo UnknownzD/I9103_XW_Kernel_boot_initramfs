@@ -43,7 +43,7 @@ copy_file ()
 	if [ $write_file -lt 2 ]; then
 		if [ $write_file -eq 1 ]; then
 			del_file $2
-			$busybox cp -f -L $1 $2 >/dev/null 2>&1
+			$busybox cp -fL $1 $2 >/dev/null 2>&1
 		fi
 		$busybox chown $5 $2 >/dev/null 2>&1
 		$busybox chmod $4 $2 >/dev/null 2>&1

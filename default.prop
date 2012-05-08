@@ -5,3 +5,37 @@ ro.secure=0
 ro.allow.mock.location=1
 ro.debuggable=1
 persist.service.adb.enable=1
+# Disabling camera sound
+ro.camera.sound.forced=0
+# Disable frequent scan of wifi channel to retain more electricity
+wifi.supplicant_scan_interval=180
+# Choose to use the best network and best class for our device
+ro.ril.hsxpa=2
+ro.ril.gprsclass=45
+ro.ril.hsdpa.category=28
+ro.ril.hsupa.category=7
+# Enable dual channel mode for faster network speed if PS + CS is supported for simultaneous transfer
+# Set this to 1 if your network allows simultaneous transfer of Circuit switched (CS) voice and Packet switched (PS) data over the same radio channel (ARFCN)
+ro.ril.enable.dtm=1
+# Enable radio encryption for hsdpa / hsupa
+ro.ril.enable.a52=1
+ro.ril.enable.a53=1
+# Add a prefix to the network name if the phone is connected to a 3G network
+ro.ril.enable.3g.prefix=1
+# The following three properties are unknown yet!
+ro.ril.htcmaskw1.bitmask=4294967295
+ro.ril.htcmaskw1=14449
+ro.ril.hep=1
+# Enable performance boost by using GPU acceleration
+debug.sf.hw=1
+debug.performance.tuning=1
+video.accelerate.hw=1
+# Following are all dalvik vm setting which is the best part to boost app performance
+# Enabling jit mode to boost the performance
+dalvik.vm.execution-mode=int:jit
+# Generated verified dalvik cache for all application including system application, for faster speed
+dalvik.vm.dexopt-flags=m=y,v=a,o=v
+# Disable checking in dalvik vm to further boost the performance
+dalvik.vm.checkjni=false
+# Set the dalvik vm heapsize to 64MB
+dalvik.vm.heapsize=64m
