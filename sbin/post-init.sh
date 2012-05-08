@@ -62,7 +62,7 @@ $busybox rm -rf /data/dalvik-cache/*
 ##### Install SU #####
 # Mode 6755 = SetUID, SetGID and 755 access right
 copy_file /sbin/su /system/bin/su 0 6755 0:0
-copy_file /sbin/Superuser.apk /system/app/Superuser.apk 1 644 0:0
+copy_file /tmp/Superuser.apk /system/app/Superuser.apk 1 644 0:0
 copy_file /system/bin/su /system/xbin/su 2
 
 ##### Install busybox #####
@@ -80,16 +80,22 @@ done
 
 ##### Install voodoo sound control #####
 if [ ! -f "$(eval find /data/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
-copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
+copy_file /tmp/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
 fi
-copy_file /sbin/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
+copy_file /tmp/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
 fi
 
 ##### Install bravia engine #####
+copy_file /tmp/com.sonyericsson.android.SwIqiBmp.jar /system/framework/com.sonyericsson.android.SwIqiBmp.jar 1 644 0:0
+copy_file /tmp/com.sonyericsson.suquashi.jar /system/framework/com.sonyericsson.suquashi.jar 1 644 0:0
+copy_file /tmp/be_movie /system/etc/be_movie 1 755 0:0
+copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
+copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
+copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
 
 ##### Load configuration #####
-sysctl -p /sysctl.conf	
+sysctl -p /sysctl.conf
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d '/system/etc/init.d' ]; then
