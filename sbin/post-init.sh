@@ -43,7 +43,7 @@ copy_file ()
 	if [ $write_file -lt 2 ]; then
 		if [ $write_file -eq 1 ]; then
 			del_file $2
-			$busybox cp -f -L $1 $2 >/dev/null 2>&1
+			$busybox cp -fL $1 $2 >/dev/null 2>&1
 		fi
 		$busybox chown $5 $2 >/dev/null 2>&1
 		$busybox chmod $4 $2 >/dev/null 2>&1
@@ -88,8 +88,8 @@ copy_file /tmp/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.con
 ##### Install bravia engine #####
 copy_file /tmp/com.sonyericsson.android.SwIqiBmp.jar /system/framework/com.sonyericsson.android.SwIqiBmp.jar 1 644 0:0
 copy_file /tmp/com.sonyericsson.suquashi.jar /system/framework/com.sonyericsson.suquashi.jar 1 644 0:0
-copy_file /tmp/be_movie /system/etc/be_movie 1 755 0:0
-copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
+copy_file /tmp/be_movie /system/etc/be_movie 1 644 0:0
+copy_file /tmp/be_photo /system/etc/be_photo 1 644 0:0
 copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
 copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
