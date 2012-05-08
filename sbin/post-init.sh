@@ -66,12 +66,14 @@ copy_file /sbin/su /system/bin/su 0 6755 0:0
 copy_file /tmp/Superuser.apk /system/app/Superuser.apk 1 644 0:0
 copy_file /system/bin/su /system/xbin/su 2
 
-##### Install busybox #####
+##### Install busybox and other binaries #####
 copy_file /sbin/busybox /system/bin/busybox 0 755 0:0
 copy_file /sbin/e2fsck /system/bin/e2fsck 0 755 0:0
 copy_file /sbin/mke2fs /system/bin/mke2fs 0 755 0:0
 copy_file /sbin/parted /system/bin/parted 0 755 0:0
+copy_file /sbin/sqlite3 /system/bin/sqlite3 0 755 0:0
 copy_file /sbin/tune2fs /system/bin/tune2fs 0 755 0:0
+copy_file /sbin/zipalign /system/bin/zipalign 0 755 0:0
 cd /sbin/
 for file in ./*; do
 	if [ "$(eval readlink $file)" == 'busybox' ]; then 
@@ -93,14 +95,147 @@ copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
 copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
 copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
-##### Load configuration #####
+##### Load sysctl configuration #####
 sysctl -p /sysctl.conf
+
+##### sqlite3 db optimization #####
+if [ -d "/data" ]; then
+	mount -o remount,rw /data;
+	for i in "$busybox find /data -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+fi;
+
+if [ -d "/system" ]; then
+	mount -o remount,rw /system;
+	for i in "$busybox find /system -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+	mount -o remount,ro /system;
+fi;
+
+if [ -d "/sdcard" ]; then
+	mount -o remount,rw /sdcard;
+	for i in "$busybox find /sdcard -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+fi;
+
+# FS mount tweak
+$busybox sync
+$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /system;
+$busybox sync
+$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /data;
+$busybox sync
+$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /cache;
+$busybox sync
+$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro /mnt/sdcard;
+$busybox sync
+$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro /mnt/sdcard/external_sd;
+
+# Disable carrieriq service
+/system/bin/pm disable android/com.carrieriq.iqagent.service.IQService
+/system/bin/pm disable android/com.carrieriq.iqagent.service.receivers.BootCompletedReceiver
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.DebugSettings
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.ShowMessage
+/system/bin/pm disable android/com.carrieriq.iqagent.client.NativeClient
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireLaunchActivity
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireActivity
+
+# Disable user stat and data collection
+$busybox chmod 000 /data/system/userbehavior.db;
+$busybox chmod 000 /data/system/usagestats/;
+$busybox chmod 000 /data/system/appusagestats/;
+
+# Select sio as default IO scheduler
+# Optimize non-rotating storage; 
+for i in $STL $BML $MMC $TFSR $ZRAM $RAM $LOOP
+do
+	# Select sio I/O scheduler as default
+	if [ -e $i/queue/scheduler ];
+	then
+		sync;
+		echo "sio" > $i/queue/scheduler;
+	fi;
+	if [ -e $i/queue/rotational ]; 
+	then
+		sync;
+		echo "0" > $i/queue/rotational; 
+	fi;
+	if [ -e $i/queue/nr_requests ];
+	then
+		sync;
+		echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
+	fi;
+	if [ -e $i/queue/rq_affinity ];
+	then
+		sync;
+		echo "1"   >  $i/queue/rq_affinity;
+	fi;
+	if [ -e $i/queue/read_ahead_kb ];
+	then
+		sync;
+		echo "2048" >  $i/queue/read_ahead_kb;
+	fi;
+	if [ -e $i/queue/iostats ];
+	then
+		sync;
+		echo "0" > $i/queue/iostats;
+	fi;
+	# Below is SIO specific configuration
+	if [ -e $i/queue/iosched/async_expire ];
+	then
+		sync;
+		echo "1000" > $i/queue/iosched/async_expire ];
+	fi;
+	if [ -e $i/queue/iosched/fifo_batch ];
+	then
+		sync;
+		echo "1" > $i/queue/iosched/fifo_batch;
+	fi;
+	if [ -e $i/queue/iosched/sync_expire ];
+	then
+		sync;
+		echo "500" > $i/queue/iosched/sync_expire ];
+	fi;
+done;
+
+# Increase the read ahead size
+for file in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do $busybox echo "2048" > $file; done
+
+# Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
+for k in $(mount | grep relatetime | cut -d " " -f3)
+do
+	sync;
+	mount -o remount,noatime,norelatime,nodiratime $k;
+done;
+for k in $(mount | grep ext4 | cut -d " " -f1)
+do
+	sync;
+	mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	sync;
+	tune2fs -f -o journal_data_writeback -O ^has_journal $k;
+	sync;
+	mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+done;
+for k in $(mount | grep vfat | cut -d " " -f3)
+do
+	sync;
+	mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+done;
+
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d '/system/etc/init.d' ]; then
     for file in /system/etc/init.d/* ; do
 	if [ -f "$file" ]; then
-		/system/bin/sh "$file" >/dev/null 2>&1
+		/sbin/sh "$file" >/dev/null 2>&1
 	fi
     done
 fi
