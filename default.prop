@@ -6,6 +6,10 @@ persist.service.adb.enable=1
 ro.camera.sound.forced=0
 # Disable frequent scan of wifi channel to retain more electricity
 wifi.supplicant_scan_interval=180
+# Enable power collapse when idling (to retain electricity)
+pm.sleep_mode=1
+# Enable radio power collapse as well
+ro.ril.disable.power.collapse=0
 # Choose to use the best network and best class for our device
 ro.ril.hsxpa=2
 ro.ril.gprsclass=45
@@ -33,8 +37,14 @@ net.tcp.buffersize.edge=4096,87380,256960,4096,16384,256960
 debug.sf.hw=1
 debug.performance.tuning=1
 video.accelerate.hw=1
+# Increase the events limit for windowsmgr for better performance
+windowsmgr.max_events_per_sec=150
 # Enable better image quality (for zoom in or out)
 persist.sys.use_dithering=1
+# Enable better jpeg quality (for both decoding and encoding)
+ro.media.enc.jpeg.quality=100
+ro.media.dec.jpeg.memcap=8000000
+ro.media.enc.hprof.vid.bps=8000000
 # Enabling / disable streaming on the following protocol
 media.stagefright.enable-player=true
 media.stagefright.enable-meta=true
@@ -44,8 +54,14 @@ media.stagefright.enable-rtsp=true
 media.stagefright.enable-record=false
 # Enable purgeable assets to save space on RAM (or just for the system mmcblk?)
 persist.sys.purgeable_assets=1
+# Disable optin user stat submission
+ro.config.nocheckin=1
 # Disable to notification (logo) of adbd
 persist.adb.notify=0
+# Force home application (luncher) to stay in memory for better response (unsure about its effect yet)
+ro.HOME_APP_ADJ=1
+# For faster boot, use hibernate mode instead of restart mode (however this can create problem as we need to wipe dalvik cache for every boot)
+# persist.sys.shutdown.mode=hibernate (don't enable it yet)
 # Following are all dalvik vm setting which is the best part to boost app performance
 # Enabling jit mode to boost the performance
 dalvik.vm.execution-mode=int:jit
