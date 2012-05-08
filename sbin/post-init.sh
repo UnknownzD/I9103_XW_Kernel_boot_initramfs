@@ -160,49 +160,49 @@ do
 	# Select sio I/O scheduler as default
 	if [ -e $i/queue/scheduler ];
 	then
-		sync;
-		echo "sio" > $i/queue/scheduler;
+		$busybox sync;
+		$busybox echo "sio" > $i/queue/scheduler;
 	fi;
 	if [ -e $i/queue/rotational ]; 
 	then
-		sync;
-		echo "0" > $i/queue/rotational; 
+		$busybox sync;
+		$busybox echo "0" > $i/queue/rotational; 
 	fi;
 	if [ -e $i/queue/nr_requests ];
 	then
-		sync;
-		echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
+		$busybox sync;
+		$busybox echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
 	fi;
 	if [ -e $i/queue/rq_affinity ];
 	then
-		sync;
-		echo "1"   >  $i/queue/rq_affinity;
+		$busybox sync;
+		$busybox echo "1"   >  $i/queue/rq_affinity;
 	fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
-		sync;
-		echo "2048" >  $i/queue/read_ahead_kb;
+		$busybox sync;
+		$busybox echo "2048" >  $i/queue/read_ahead_kb;
 	fi;
 	if [ -e $i/queue/iostats ];
 	then
-		sync;
-		echo "0" > $i/queue/iostats;
+		$busybox sync;
+		$busybox echo "0" > $i/queue/iostats;
 	fi;
 	# Below is SIO specific configuration
 	if [ -e $i/queue/iosched/async_expire ];
 	then
-		sync;
-		echo "1000" > $i/queue/iosched/async_expire ];
+		$busybox sync;
+		$busybox echo "1000" > $i/queue/iosched/async_expire ];
 	fi;
 	if [ -e $i/queue/iosched/fifo_batch ];
 	then
-		sync;
-		echo "1" > $i/queue/iosched/fifo_batch;
+		$busybox sync;
+		$busybox echo "1" > $i/queue/iosched/fifo_batch;
 	fi;
 	if [ -e $i/queue/iosched/sync_expire ];
 	then
-		sync;
-		echo "500" > $i/queue/iosched/sync_expire ];
+		$busybox sync;
+		$busybox echo "500" > $i/queue/iosched/sync_expire ];
 	fi;
 done;
 
@@ -212,22 +212,22 @@ for file in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do $busybox echo 
 # Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
 for k in $(mount | grep relatetime | cut -d " " -f3)
 do
-	sync;
-	mount -o remount,noatime,norelatime,nodiratime $k;
+	$busybox sync;
+	$busybox mount -o remount,noatime,norelatime,nodiratime $k;
 done;
 for k in $(mount | grep ext4 | cut -d " " -f1)
 do
-	sync;
-	mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
-	sync;
-	tune2fs -f -o journal_data_writeback -O ^has_journal $k;
-	sync;
-	mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	$busybox sync;
+	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	$busybox sync;
+	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k;
+	$busybox sync;
+	$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
 done;
 for k in $(mount | grep vfat | cut -d " " -f3)
 do
-	sync;
-	mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+	$busybox sync;
+	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
 done;
 
 
