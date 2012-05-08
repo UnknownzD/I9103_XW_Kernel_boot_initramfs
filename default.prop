@@ -37,6 +37,7 @@ net.tcp.buffersize.edge=4096,87380,256960,4096,16384,256960
 debug.sf.hw=1
 debug.performance.tuning=1
 video.accelerate.hw=1
+debug.composition.type=gpu
 # Increase the events limit for windowsmgr for better performance
 windowsmgr.max_events_per_sec=150
 # Enable better image quality (for zoom in or out)
@@ -45,6 +46,16 @@ persist.sys.use_dithering=1
 ro.media.enc.jpeg.quality=100
 ro.media.dec.jpeg.memcap=8000000
 ro.media.enc.hprof.vid.bps=8000000
+# Enable bravia engine
+ro.service.swiqi.supported=true
+persist.service.swiqi.enable=1
+# Unlock the framerate as allow >60fps eglSwapBuffers
+debug.gr.swapinterval=0
+debug.egl.swapinterval=0
+# Decrease the delay after ending a phone call
+ro.telephony.call_ring.delay=0
+ro.lge.proximity.delay=25
+mot.proximity.delay=25
 # Enabling / disable streaming on the following protocol
 media.stagefright.enable-player=true
 media.stagefright.enable-meta=true
@@ -60,6 +71,8 @@ ro.config.nocheckin=1
 persist.adb.notify=0
 # Force home application (luncher) to stay in memory for better response (unsure about its effect yet)
 ro.HOME_APP_ADJ=1
+# Disable service iq
+service.iq.active=0
 # For faster boot, use hibernate mode instead of restart mode (however this can create problem as we need to wipe dalvik cache for every boot)
 # persist.sys.shutdown.mode=hibernate (don't enable it yet)
 # Following are all dalvik vm setting which is the best part to boost app performance
