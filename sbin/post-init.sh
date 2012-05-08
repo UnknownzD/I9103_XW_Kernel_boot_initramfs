@@ -56,6 +56,9 @@ copy_file ()
 $busybox mount -o remount,rw /system
 $busybox mount -o remount,rw /data
 
+##### Remove dalvik-cache #####
+$busybox rm -rf /data/dalvik-cache/*
+
 ##### Install SU #####
 # Mode 6755 = SetUID, SetGID and 755 access right
 copy_file /sbin/su /system/bin/su 0 6755 0:0
@@ -81,6 +84,9 @@ copy_file /sbin/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.c
 fi
 copy_file /sbin/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
 fi
+
+##### Install bravia engine #####
+
 
 ##### Load configuration #####
 sysctl -p /sysctl.conf	

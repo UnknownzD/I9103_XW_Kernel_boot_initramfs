@@ -10,6 +10,8 @@ wifi.supplicant_scan_interval=180
 pm.sleep_mode=1
 # Enable radio power collapse as well
 ro.ril.disable.power.collapse=0
+# Extend the 'Loss of Signal' alert to smooths out constant disconnects and reconnects and save the battery life
+ro.mot.eri.losalert.delay=1000
 # Choose to use the best network and best class for our device
 ro.ril.hsxpa=2
 ro.ril.gprsclass=45
@@ -52,8 +54,9 @@ persist.service.swiqi.enable=1
 # Unlock the framerate as allow >60fps eglSwapBuffers
 debug.gr.swapinterval=0
 debug.egl.swapinterval=0
-# Decrease the delay after ending a phone call
+# Decrease the delay for showing an incoming call
 ro.telephony.call_ring.delay=0
+# Decrease the proximity sensor delay so that proximity can work faster when using phone call
 ro.lge.proximity.delay=25
 mot.proximity.delay=25
 # Enabling / disable streaming on the following protocol
