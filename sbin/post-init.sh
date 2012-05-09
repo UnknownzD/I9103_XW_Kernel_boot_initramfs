@@ -3,14 +3,6 @@
 busybox="/sbin/busybox"
 sleep 3
 
-# Ext4 tweak
-#####$busybox mount -o remount,noauto_da_alloc /cache /cache
-#####$busybox mount -o remount,noauto_da_alloc /data /data
-
-# SD Speed tweaks
-#####echo "2048" > /sys/devices/virtual/bdi/179:0/read_ahead_kb;
-#####echo "2048" > /sys/devices/virtual/bdi/7:0/read_ahead_kb
-
 del_file()
 {
 	$busybox chmod -R 777 $1 >/dev/null 2>&1
