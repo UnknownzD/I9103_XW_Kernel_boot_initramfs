@@ -56,6 +56,94 @@ copy_file ()
 $busybox mount -o remount,rw /system
 $busybox mount -o remount,rw /data
 
+# Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
+for k in $(mount | grep relatetime | cut -d " " -f3)
+do
+	$busybox sync;
+	$busybox mount -o remount,noatime,norelatime,nodiratime $k;
+done;
+
+for k in $(mount | grep ext4 | cut -d " " -f1)
+do
+	$busybox sync;
+	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	$busybox sync;
+	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k;
+	$busybox sync;
+	$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+done;
+
+for k in $(mount | grep vfat | cut -d " " -f3)
+do
+	$busybox sync;
+	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+done;
+
+# Select sio as default IO scheduler
+# Only the first 4 has I/O scheduler
+STL=`ls -d /sys/block/stl*`;
+BML=`ls -d /sys/block/bml*`;
+MMC=`ls -d /sys/block/mmc*`;
+TFSR=`ls -d /sys/block/tfsr*`;
+# Belows are without I/O scheduler, be careful to mess with them!
+ZRM=`ls -d /sys/block/zram*`;
+RAM=`ls -d /sys/block/ram*`;
+LOOP=`ls -d /sys/block/loop*`;
+# Optimize non-rotating storage; 
+for i in $MMC $LOOP
+do
+	# Select sio I/O scheduler as default
+	if [ -e $i/queue/scheduler ];
+	then
+		$busybox sync;
+		$busybox echo "sio" > $i/queue/scheduler;
+	fi;
+	if [ -e $i/queue/rotational ]; 
+	then
+		$busybox sync;
+		$busybox echo "0" > $i/queue/rotational; 
+	fi;
+	if [ -e $i/queue/nr_requests ];
+	then
+		$busybox sync;
+		$busybox echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
+	fi;
+	if [ -e $i/queue/rq_affinity ];
+	then
+		$busybox sync;
+		$busybox echo "1"   >  $i/queue/rq_affinity;
+	fi;
+	if [ -e $i/queue/read_ahead_kb ];
+	then
+		$busybox sync;
+		$busybox echo "2048" >  $i/queue/read_ahead_kb;
+	fi;
+	if [ -e $i/queue/iostats ];
+	then
+		$busybox sync;
+		$busybox echo "0" > $i/queue/iostats;
+	fi;
+	# Below is SIO specific configuration
+	if [ -e $i/queue/iosched/async_expire ];
+	then
+		$busybox sync;
+		$busybox echo "1000" > $i/queue/iosched/async_expire ];
+	fi;
+	if [ -e $i/queue/iosched/fifo_batch ];
+	then
+		$busybox sync;
+		$busybox echo "1" > $i/queue/iosched/fifo_batch;
+	fi;
+	if [ -e $i/queue/iosched/sync_expire ];
+	then
+		$busybox sync;
+		$busybox echo "500" > $i/queue/iosched/sync_expire ];
+	fi;
+done;
+
+# Increase the read ahead size
+for file in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do $busybox echo "2048" > $file; done
+
 ##### Remove dalvik-cache and cache #####
 $busybox rm -rf /data/dalvik-cache/*
 $busybox rm -rf /data/cache/*
@@ -118,26 +206,14 @@ if [ -d "/system" ]; then
 	mount -o remount,ro /system;
 fi;
 
-if [ -d "/sdcard" ]; then
+if [ -d "/mnt/sdcard" ]; then
 	mount -o remount,rw /sdcard;
-	for i in "$busybox find /sdcard -iname "*.db""; 
+	for i in "$busybox find /mnt/sdcard -iname "*.db""; 
 	do \
 		/sbin/sqlite3 $i 'VACUUM;'; 
 		/sbin/sqlite3 $i 'REINDEX;'; 
 	done;
 fi;
-
-# FS mount tweak
-$busybox sync
-$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /system;
-$busybox sync
-$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /data;
-$busybox sync
-$busybox mount -o remount,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh /cache;
-$busybox sync
-$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro /mnt/sdcard;
-$busybox sync
-$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro /mnt/sdcard/external_sd;
 
 # Disable carrieriq service
 /system/bin/pm disable android/com.carrieriq.iqagent.service.IQService
@@ -152,83 +228,6 @@ $busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro 
 $busybox chmod 000 /data/system/userbehavior.db;
 $busybox chmod 000 /data/system/usagestats/;
 $busybox chmod 000 /data/system/appusagestats/;
-
-# Select sio as default IO scheduler
-# Optimize non-rotating storage; 
-for i in $STL $BML $MMC $TFSR $ZRAM $RAM $LOOP
-do
-	# Select sio I/O scheduler as default
-	if [ -e $i/queue/scheduler ];
-	then
-		$busybox sync;
-		$busybox echo "sio" > $i/queue/scheduler;
-	fi;
-	if [ -e $i/queue/rotational ]; 
-	then
-		$busybox sync;
-		$busybox echo "0" > $i/queue/rotational; 
-	fi;
-	if [ -e $i/queue/nr_requests ];
-	then
-		$busybox sync;
-		$busybox echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
-	fi;
-	if [ -e $i/queue/rq_affinity ];
-	then
-		$busybox sync;
-		$busybox echo "1"   >  $i/queue/rq_affinity;
-	fi;
-	if [ -e $i/queue/read_ahead_kb ];
-	then
-		$busybox sync;
-		$busybox echo "2048" >  $i/queue/read_ahead_kb;
-	fi;
-	if [ -e $i/queue/iostats ];
-	then
-		$busybox sync;
-		$busybox echo "0" > $i/queue/iostats;
-	fi;
-	# Below is SIO specific configuration
-	if [ -e $i/queue/iosched/async_expire ];
-	then
-		$busybox sync;
-		$busybox echo "1000" > $i/queue/iosched/async_expire ];
-	fi;
-	if [ -e $i/queue/iosched/fifo_batch ];
-	then
-		$busybox sync;
-		$busybox echo "1" > $i/queue/iosched/fifo_batch;
-	fi;
-	if [ -e $i/queue/iosched/sync_expire ];
-	then
-		$busybox sync;
-		$busybox echo "500" > $i/queue/iosched/sync_expire ];
-	fi;
-done;
-
-# Increase the read ahead size
-for file in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do $busybox echo "2048" > $file; done
-
-# Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
-for k in $(mount | grep relatetime | cut -d " " -f3)
-do
-	$busybox sync;
-	$busybox mount -o remount,noatime,norelatime,nodiratime $k;
-done;
-for k in $(mount | grep ext4 | cut -d " " -f1)
-do
-	$busybox sync;
-	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
-	$busybox sync;
-	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k;
-	$busybox sync;
-	$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
-done;
-for k in $(mount | grep vfat | cut -d " " -f3)
-do
-	$busybox sync;
-	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
-done;
 
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
