@@ -66,12 +66,14 @@ copy_file /sbin/su /system/bin/su 0 6755 0:0
 copy_file /tmp/Superuser.apk /system/app/Superuser.apk 1 644 0:0
 copy_file /system/bin/su /system/xbin/su 2
 
-##### Install busybox #####
+##### Install busybox and other binaries #####
 copy_file /sbin/busybox /system/bin/busybox 0 755 0:0
 copy_file /sbin/e2fsck /system/bin/e2fsck 0 755 0:0
 copy_file /sbin/mke2fs /system/bin/mke2fs 0 755 0:0
 copy_file /sbin/parted /system/bin/parted 0 755 0:0
+copy_file /sbin/sqlite3 /system/bin/sqlite3 0 755 0:0
 copy_file /sbin/tune2fs /system/bin/tune2fs 0 755 0:0
+copy_file /sbin/zipalign /system/bin/zipalign 0 755 0:0
 cd /sbin/
 for file in ./*; do
 	if [ "$(eval readlink $file)" == 'busybox' ]; then 
@@ -93,14 +95,14 @@ copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
 copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
 copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
-##### Load configuration #####
+#####  Load sysctl configuration #####
 sysctl -p /sysctl.conf
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d '/system/etc/init.d' ]; then
     for file in /system/etc/init.d/* ; do
 	if [ -f "$file" ]; then
-		/system/bin/sh "$file" >/dev/null 2>&1
+		/sbin/sh "$file" >/dev/null 2>&1
 	fi
     done
 fi
