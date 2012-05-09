@@ -61,60 +61,60 @@ STL=$(ls -d /sys/block/stl*);
 BML=$(ls -d /sys/block/bml*);
 MMC=$(ls -d /sys/block/mmc*);
 TFSR=$(ls -d /sys/block/tfsr*);
-# Belows are without I/O scheduler, be careful to mess with them!
+# Belows are without I/O scheduler, be careful to mess with them! Do not enable loop yet as it is causing problem!
 ZRM=$(ls -d /sys/block/zram*);
 RAM=$(ls -d /sys/block/ram*);
 LOOP=$(ls -d /sys/block/loop*);
 
 # Optimize non-rotating storage, only MMC and LOOP are presented on our devices
-for i in $MMC $LOOP
+for i in $MMC
 do
 	# Select sio I/O scheduler as default
 	if [ -e $i/queue/scheduler ];
 	then
 		sync;
-		echo "sio" > $i/queue/scheduler;
+		echo 'sio' > $i/queue/scheduler;
 	fi;
 	if [ -e $i/queue/rotational ]; 
 	then
 		sync;
-		echo "0" > $i/queue/rotational; 
+		echo '0' > $i/queue/rotational; 
 	fi;
 	if [ -e $i/queue/nr_requests ];
 	then
 		sync;
-		echo "1024" > $i/queue/nr_requests; # for starters: keep it sane
+		echo '1024' > $i/queue/nr_requests; # for starters: keep it sane
 	fi;
 	if [ -e $i/queue/rq_affinity ];
 	then
 		sync;
-		echo "1"   >  $i/queue/rq_affinity;
+		echo '1'   >  $i/queue/rq_affinity;
 	fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
 		sync;
-		echo "2048" >  $i/queue/read_ahead_kb;
+		echo '2048' >  $i/queue/read_ahead_kb;
 	fi;
 	if [ -e $i/queue/iostats ];
 	then
 		sync;
-		echo "0" > $i/queue/iostats;
+		echo '0' > $i/queue/iostats;
 	fi;
 	# Below is SIO specific configuration
 	if [ -e $i/queue/iosched/async_expire ];
 	then
 		sync;
-		echo "1000" > $i/queue/iosched/async_expire ];
+		echo '1000' > $i/queue/iosched/async_expire ];
 	fi;
 	if [ -e $i/queue/iosched/fifo_batch ];
 	then
 		sync;
-		echo "1" > $i/queue/iosched/fifo_batch;
+		echo '1' > $i/queue/iosched/fifo_batch;
 	fi;
 	if [ -e $i/queue/iosched/sync_expire ];
 	then
 		sync;
-		echo "500" > $i/queue/iosched/sync_expire ];
+		echo '500' > $i/queue/iosched/sync_expire ];
 	fi;
 done;
 
