@@ -64,43 +64,43 @@ do
 	# Select sio I/O scheduler as default
 	if [ -e $i/queue/scheduler ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo 'sio' > $i/queue/scheduler;
 	fi;
 	if [ -e $i/queue/rotational ]; 
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '0' > $i/queue/rotational;
 	fi;
 	if [ -e $i/queue/nr_requests ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '1024' > $i/queue/nr_requests; # for starters: keep it sane
 	fi;
 	if [ -e $i/queue/rq_affinity ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '1' > $i/queue/rq_affinity;
 	fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '2048' > $i/queue/read_ahead_kb;
 	fi;
 	if [ -e $i/queue/iostats ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '0' > $i/queue/iostats;
 	fi;
 	# Below is SIO specific configuration
 	if [ -e $i/queue/iosched/async_expire ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '1000' > $i/queue/iosched/async_expire ];
 	fi;
 	if [ -e $i/queue/iosched/fifo_batch ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '1' > $i/queue/iosched/fifo_batch;
 	fi;
 	if [ -e $i/queue/iosched/sync_expire ];
@@ -120,28 +120,28 @@ done
 
 for k in $($busybox mount | grep 'relatime' | cut -d ' ' -f3)
 do
-	$busybox sync;
-	$busybox mount -o remount,noatime,norelatime,nodiratime $k;
+	$busybox sync >/dev/null 2>&1;
+	$busybox mount -o remount,noatime,norelatime,nodiratime $k >/dev/null 2>&1;
 done;
 
 for k in $($busybox mount | grep 'ext4' | cut -d ' ' -f1)
 do
-	$busybox sync;
-	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k;
-	$busybox sync;
-	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k;
-	$busybox sync;
+	$busybox sync >/dev/null 2>&1;
+	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
+	$busybox sync >/dev/null 2>&1;
+	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k >/dev/null 2>&1;
+	$busybox sync >/dev/null 2>&1;
 	if [ "$(tune2fs -l $k | grep 'journal_data_writeback')" == '' ]; then
-		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k;
+		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
 	else
-		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k >/dev/null 2>&1;
 	fi
 done;
 
 for k in $($busybox mount | grep 'vfat' | cut -d " " -f3)
 do
-	$busybox sync;
-	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+	$busybox sync >/dev/null 2>&1;
+	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k >/dev/null 2>&1; 
 done;
 
 ##### Remove dalvik-cache and cache #####
@@ -186,40 +186,44 @@ copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 ##### sqlite3 db optimization and zipalign #####
 if [ -d '/data' ]; then
 	if [ -d '/data/app' ]; then
-		for i in $($busybox find /data/app -iname '*.apk'); do /sbin/zipalign -c 4 $i; done
+		for i in $($busybox find /data/app -iname '*.apk'); do /sbin/zipalign -c 4 $i >/dev/null 2>&1; done
 	fi
-	for i in $($busybox find /data -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
+	for i in $($busybox find /data -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;' >/dev/null 2>&1 ; /sbin/sqlite3 $i 'REINDEX;' >/dev/null 2>&1; done
 fi
 
 if [ -d '/system' ]; then
 	if [ -d '/system/app' ]; then
-		for i in $($busybox find /system/app -iname '*.apk'); do /sbin/zipalign -c 4 $i; done
+		for i in $($busybox find /system/app -iname '*.apk'); do /sbin/zipalign -c 4 $i >/dev/null 2>&1; done
 	fi
-	for i in $($busybox find /system -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
+	for i in $($busybox find /system -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;' >/dev/null 2>&1; /sbin/sqlite3 $i 'REINDEX;' >/dev/null 2>&1; done
 fi
 
 if [ -d '/mnt/sdcard' ]; then
 	$busybox mount -o remount,rw /mnt/sdcard;
 	$busybox mount -o remount,rw /mnt/sdcard/external_sd;
-	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
+	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;' >/dev/null 2>&1; /sbin/sqlite3 $i 'REINDEX;' >/dev/null 2>&1; done
 fi	
 
 # Disable carrieriq service
-/system/bin/pm disable android/com.carrieriq.iqagent.service.IQService
-/system/bin/pm disable android/com.carrieriq.iqagent.service.receivers.BootCompletedReceiver
-/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.DebugSettings
-/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.ShowMessage
-/system/bin/pm disable android/com.carrieriq.iqagent.client.NativeClient
-/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireLaunchActivity
-/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireActivity
+/system/bin/pm disable android/com.carrieriq.iqagent.service.IQService >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.service.receivers.BootCompletedReceiver >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.DebugSettings >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.ShowMessage >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.client.NativeClient >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireLaunchActivity >/dev/null 2>&1
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireActivity >/dev/null 2>&1
 
 # Disable user stat and data collection
-$busybox chmod 000 /data/system/userbehavior.db;
-$busybox chmod 000 /data/system/usagestats/;
-$busybox chmod 000 /data/system/appusagestats/;
+del_file /data/system/userbehavior.db
+$busybox touch /data/system/userbehavior.db >/dev/null 2>&1
+$busybox chmod 000 /data/system/userbehavior.db >/dev/null 2>&1
+del_file /data/system/usagestats
+$busybox mkdir -m 000 /data/system/usagestats >/dev/null 2>&1
+del_file /data/system/appusagestats
+$busybox mkdir -m 000 /data/system/appusagestats/ >/dev/null 2>&1
 
 #####  Load sysctl configuration #####
-sysctl -p /sysctl.conf
+sysctl -p /sysctl.conf >/dev/null 2>&1
 
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d '/system/etc/init.d' ]; then
