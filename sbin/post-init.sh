@@ -64,80 +64,84 @@ do
 	# Select sio I/O scheduler as default
 	if [ -e $i/queue/scheduler ];
 	then
-		sync;
-		echo 'sio' > $i/queue/scheduler;
+		$busybox sync;
+		$busybox echo 'sio' > $i/queue/scheduler;
 	fi;
 	if [ -e $i/queue/rotational ]; 
 	then
-		sync;
-		echo '0' > $i/queue/rotational; 
+		$busybox sync;
+		$busybox echo '0' > $i/queue/rotational;
 	fi;
 	if [ -e $i/queue/nr_requests ];
 	then
-		sync;
-		echo '1024' > $i/queue/nr_requests; # for starters: keep it sane
+		$busybox sync;
+		$busybox echo '1024' > $i/queue/nr_requests; # for starters: keep it sane
 	fi;
 	if [ -e $i/queue/rq_affinity ];
 	then
-		sync;
-		echo '1'   >  $i/queue/rq_affinity;
+		$busybox sync;
+		$busybox echo '1' > $i/queue/rq_affinity;
 	fi;
 	if [ -e $i/queue/read_ahead_kb ];
 	then
-		sync;
-		echo '2048' >  $i/queue/read_ahead_kb;
+		$busybox sync;
+		$busybox echo '2048' > $i/queue/read_ahead_kb;
 	fi;
 	if [ -e $i/queue/iostats ];
 	then
-		sync;
-		echo '0' > $i/queue/iostats;
+		$busybox sync;
+		$busybox echo '0' > $i/queue/iostats;
 	fi;
 	# Below is SIO specific configuration
 	if [ -e $i/queue/iosched/async_expire ];
 	then
-		sync;
-		echo '1000' > $i/queue/iosched/async_expire ];
+		$busybox sync;
+		$busybox echo '1000' > $i/queue/iosched/async_expire ];
 	fi;
 	if [ -e $i/queue/iosched/fifo_batch ];
 	then
-		sync;
-		echo '1' > $i/queue/iosched/fifo_batch;
+		$busybox sync;
+		$busybox echo '1' > $i/queue/iosched/fifo_batch;
 	fi;
 	if [ -e $i/queue/iosched/sync_expire ];
 	then
-		sync;
-		echo '500' > $i/queue/iosched/sync_expire ];
+		$busybox sync;
+		$busybox echo '500' > $i/queue/iosched/sync_expire ];
 	fi;
 done;
 
 ##### Modify others read_ahead_kb value as well #####
 #for i in $(ls -d /sys/devices/virtual/bdi/179:*/read_ahead_kb); do
-for i in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do
-	echo '2048' > $i;
+for i in $($busybox ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do
+	$busybox echo '2048' > $i;
 done
 
 # Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
 
-for k in $(mount | grep relatetime | cut -d " " -f3)
+for k in $($busybox mount | grep 'relatime' | cut -d ' ' -f3)
 do
-	sync;
-	mount -o remount,noatime,norelatime,nodiratime $k;
+	$busybox sync;
+	$busybox mount -o remount,noatime,norelatime,nodiratime $k;
 done;
 
-for k in $(mount | grep ext4 | cut -d " " -f3)
+for k in $($busybox mount | grep 'ext4' | cut -d ' ' -f1)
 do
-	sync;
-	mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
-	sync;
-	tune2fs -f -o journal_data_writeback -O ^has_journal $k;
-	sync;
-	mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	$busybox sync;
+	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k;
+	$busybox sync;
+	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k;
+	$busybox sync;
+	if [ "$(tune2fs -l $k | grep 'journal_data_writeback')" == '' ]; then
+		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k;
+	else
+		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	fi
 done;
 
-for k in $(mount | grep vfat | cut -d " " -f3)
+for k in $($busybox mount | grep 'vfat' | cut -d " " -f3)
 do
-	sync;
-	mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+	$busybox sync;
+	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
 done;
 
 ##### Remove dalvik-cache and cache #####
@@ -160,13 +164,13 @@ copy_file /sbin/tune2fs /system/bin/tune2fs 0 755 0:0
 copy_file /sbin/zipalign /system/xbin/zipalign 0 755 0:0
 cd /sbin/
 for file in ./*; do
-	if [ "$(eval readlink $file)" == 'busybox' ]; then 
+	if [ "$($busybox readlink $file)" == 'busybox' ]; then 
 		copy_file busybox /system/bin/$file 2
 	fi
 done
 
 ##### Install voodoo sound control #####
-if [ ! -f "$(eval find /data/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
+if [ ! -f "$($busybox find /data/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
 copy_file /tmp/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
 fi
 copy_file /tmp/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
@@ -195,8 +199,8 @@ if [ -d '/system' ]; then
 fi
 
 if [ -d '/mnt/sdcard' ]; then
-	mount -o remount,rw /mnt/sdcard;
-	mount -o remount,rw /mnt/sdcard/external_sd;
+	$busybox mount -o remount,rw /mnt/sdcard;
+	$busybox mount -o remount,rw /mnt/sdcard/external_sd;
 	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
 fi	
 
@@ -207,7 +211,7 @@ sysctl -p /sysctl.conf
 if [ -d '/system/etc/init.d' ]; then
     for file in /system/etc/init.d/* ; do
 	if [ -f "$file" ]; then
-		/sbin/sh "$file" >/dev/null 2>&1
+		$busybox sh "$file" >/dev/null 2>&1
 	fi
     done
 fi
