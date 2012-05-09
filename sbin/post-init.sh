@@ -204,6 +204,20 @@ if [ -d '/mnt/sdcard' ]; then
 	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
 fi	
 
+# Disable carrieriq service
+/system/bin/pm disable android/com.carrieriq.iqagent.service.IQService
+/system/bin/pm disable android/com.carrieriq.iqagent.service.receivers.BootCompletedReceiver
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.DebugSettings
+/system/bin/pm disable android/com.carrieriq.iqagent.service.ui.ShowMessage
+/system/bin/pm disable android/com.carrieriq.iqagent.client.NativeClient
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireLaunchActivity
+/system/bin/pm disable android/com.carrieriq.iqagent.stdmetrics.survey.android.QuestionnaireActivity
+
+# Disable user stat and data collection
+$busybox chmod 000 /data/system/userbehavior.db;
+$busybox chmod 000 /data/system/usagestats/;
+$busybox chmod 000 /data/system/appusagestats/;
+
 #####  Load sysctl configuration #####
 sysctl -p /sysctl.conf
 
