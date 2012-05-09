@@ -192,8 +192,8 @@ if [ -d '/system' ]; then
 fi
 
 if [ -d '/mnt/sdcard' ]; then
-	$busybox mount -o remount,rw /mnt/sdcard;
-	$busybox mount -o remount,rw /mnt/sdcard/external_sd;
+	$busybox mount -o remount,rw /mnt/sdcard >/dev/null 2>&1;
+	$busybox mount -o remount,rw /mnt/sdcard/external_sd >/dev/null 2>&1;
 	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;' >/dev/null 2>&1; /sbin/sqlite3 $i 'REINDEX;' >/dev/null 2>&1; done
 fi	
 
