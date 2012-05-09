@@ -170,10 +170,10 @@ for file in ./*; do
 done
 
 ##### Install voodoo sound control #####
-if [ ! -f "$($busybox find /data/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
+if [ ! -f "$($busybox find /system/app | grep '/system/app/org.projectvoodoo.controlapp')" ]; then
 copy_file /tmp/org.projectvoodoo.controlapp.apk /system/app/org.projectvoodoo.controlapp.apk 1 644 0:0
 fi
-copy_file /tmp/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 755 0:0
+copy_file /tmp/libvoodoo_sound_hardware_init.so /data/data/org.projectvoodoo.controlapp/lib/libvoodoo_sound_hardware_init.so 1 644 0:0
 
 ##### Install bravia engine #####
 copy_file /tmp/com.sonyericsson.android.SwIqiBmp.jar /system/framework/com.sonyericsson.android.SwIqiBmp.jar 1 644 0:0
