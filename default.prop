@@ -37,9 +37,9 @@ net.tcp.buffersize.gprs=4096,87380,256960,4096,16384,256960
 net.tcp.buffersize.edge=4096,87380,256960,4096,16384,256960
 # Enable performance boost by using GPU acceleration
 debug.sf.hw=1
-debug.performance.tuning=1
+# debug.performance.tuning=1
 video.accelerate.hw=1
-debug.composition.type=gpu
+# debug.composition.type=gpu
 # Increase the events limit for windowsmgr for better performance
 windowsmgr.max_events_per_sec=150
 # Enable better image quality (for zoom in or out)
@@ -47,7 +47,7 @@ persist.sys.use_dithering=1
 # Enable better jpeg quality (for both decoding and encoding)
 ro.media.enc.jpeg.quality=100
 ro.media.dec.jpeg.memcap=8000000
-# ro.media.enc.hprof.vid.bps=8000000 (Disabled this now just because it doesn't work on our device)
+ro.media.enc.hprof.vid.bps=8000000
 # Enable bravia engine
 ro.service.swiqi.supported=true
 persist.service.swiqi.enable=1
@@ -65,7 +65,7 @@ media.stagefright.enable-meta=true
 media.stagefright.enable-scan=true
 media.stagefright.enable-http=true
 media.stagefright.enable-rtsp=true
-media.stagefright.enable-record=false
+media.stagefright.enable-record=true
 # Enable purgeable assets to save space on RAM (or just for the system mmcblk?)
 persist.sys.purgeable_assets=1
 # Disable optin user stat submission
