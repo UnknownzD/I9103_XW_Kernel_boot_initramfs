@@ -36,12 +36,14 @@ copy_file ()
 		if [ $write_file -eq 1 ]; then
 			del_file $2
 			$busybox cp -fL $1 $2 >/dev/null 2>&1
+			$busybox sync
 		fi
 		$busybox chown $5 $2 >/dev/null 2>&1
 		$busybox chmod $4 $2 >/dev/null 2>&1
 	elif [ $write_file -eq 2 ]; then
 		$busybox rm -rf $1 >/dev/null 2>&1
 		$busybox ln -fs $1 $2 >/dev/null 2>&1
+		$busybox sync
 	fi
 }
 
