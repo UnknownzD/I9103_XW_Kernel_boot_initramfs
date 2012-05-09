@@ -125,15 +125,17 @@ done;
 
 for k in $($busybox mount | grep 'ext4' | cut -d ' ' -f1)
 do
-	$busybox sync >/dev/null 2>&1;
-	$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
-	$busybox sync >/dev/null 2>&1;
-	/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k >/dev/null 2>&1;
-	$busybox sync >/dev/null 2>&1;
-	if [ "$(tune2fs -l $k | grep 'journal_data_writeback')" == '' ]; then
-		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
-	else
-		$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k >/dev/null 2>&1;
+	if [ $k != '/dev/block/mmcblk0p1' ]; then
+		$busybox sync >/dev/null 2>&1;
+		$busybox mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
+		$busybox sync >/dev/null 2>&1;
+		/sbin/tune2fs -f -o journal_data_writeback -O ^has_journal $k >/dev/null 2>&1;
+		$busybox sync >/dev/null 2>&1;
+		if [ "$(tune2fs -l $k | grep 'journal_data_writeback')" == '' ]; then
+			$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,nobh $k >/dev/null 2>&1;
+		else
+			$busybox mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k >/dev/null 2>&1;
+		fi
 	fi
 done;
 
