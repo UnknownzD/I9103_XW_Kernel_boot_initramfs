@@ -118,6 +118,12 @@ do
 	fi;
 done;
 
+##### Modify others read_ahead_kb value as well #####
+#for i in $(ls -d /sys/devices/virtual/bdi/179:*/read_ahead_kb); do
+for i in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do
+	echo '2048' > $i;
+done
+
 ##### Remove dalvik-cache and cache #####
 $busybox rm -rf /data/dalvik-cache/*
 $busybox rm -rf /data/cache/*
