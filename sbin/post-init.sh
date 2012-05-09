@@ -95,6 +95,35 @@ copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
 copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
 copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
+##### sqlite3 db optimization #####
+if [ -d "/data" ]; then
+	mount -o remount,rw /data;
+	for i in "$busybox find /data -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+fi;
+
+if [ -d "/system" ]; then
+	mount -o remount,rw /system;
+	for i in "$busybox find /system -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+	mount -o remount,ro /system;
+fi;
+
+if [ -d "/mnt/sdcard" ]; then
+	mount -o remount,rw /sdcard;
+	for i in "$busybox find /mnt/sdcard -iname "*.db""; 
+	do \
+		/sbin/sqlite3 $i 'VACUUM;'; 
+		/sbin/sqlite3 $i 'REINDEX;'; 
+	done;
+fi;
+
 #####  Load sysctl configuration #####
 sysctl -p /sysctl.conf
 
