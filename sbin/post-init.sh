@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 busybox="/sbin/busybox"
-sleep 1
+sleep 3
 
 del_file()
 {
