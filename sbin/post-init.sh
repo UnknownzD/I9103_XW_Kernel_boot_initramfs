@@ -173,7 +173,7 @@ copy_file /tmp/com.sonyericsson.android.SwIqiBmp.jar /system/framework/com.sonye
 copy_file /tmp/com.sonyericsson.suquashi.jar /system/framework/com.sonyericsson.suquashi.jar 1 644 0:0
 copy_file /tmp/be_movie /system/etc/be_movie 1 755 0:0
 copy_file /tmp/be_photo /system/etc/be_photo 1 755 0:0
-copy_file /tmp/com.sonyericsson.suquashi.xml /system/etc/permissions/com.sonyericsson.suquashi.xml 1 644 0:0
+copy_file /tmp/com.sonyericsson.android.SwIqiBmp.xml /system/etc/permissions/com.sonyericsson.android.SwIqiBmp.xml 1 644 0:0
 copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
 ##### sqlite3 db optimization and zipalign #####
