@@ -97,21 +97,22 @@ copy_file /tmp/libswiqibmpcnv.so /system/lib/libswiqibmpcnv.so 1 644 0:0
 
 ##### sqlite3 db optimization and zipalign #####
 if [ -d '/data' ]; then
-	if [ -d '/data/app']; then
+	if [ -d '/data/app' ]; then
 		for i in $($busybox find /data/app -iname '*.apk'); do /sbin/zipalign -c 4 $i; done
 	fi
 	for i in $($busybox find /data -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
 fi
 
 if [ -d '/system' ]; then
-	if [ -d '/system/app']; then
+	if [ -d '/system/app' ]; then
 		for i in $($busybox find /system/app -iname '*.apk'); do /sbin/zipalign -c 4 $i; done
 	fi
 	for i in $($busybox find /system -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
 fi
 
 if [ -d '/mnt/sdcard' ]; then
-	mount -o remount,rw /sdcard;
+	mount -o remount,rw /mnt/sdcard;
+	mount -o remount,rw /mnt/sdcard/external_sd;
 	for i in $($busybox find /mnt/sdcard -iname '*.db'); do /sbin/sqlite3 $i 'VACUUM;'; /sbin/sqlite3 $i 'REINDEX;'; done
 fi	
 
