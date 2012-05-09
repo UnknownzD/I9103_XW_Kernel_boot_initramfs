@@ -227,4 +227,4 @@ if [ -d '/system/etc/init.d' ]; then
     done
 fi
 
-$busybox mount -o remount,ro /system
+$busybox mount -o remount,ro /system >/dev/null 2>&1
