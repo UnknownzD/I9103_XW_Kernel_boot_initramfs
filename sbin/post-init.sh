@@ -1,7 +1,7 @@
 #!/system/bin/sh
 
 busybox="/sbin/busybox"
-sleep 3
+sleep 1
 
 del_file()
 {
@@ -44,9 +44,6 @@ copy_file ()
 		$busybox ln -fs $1 $2 >/dev/null 2>&1
 	fi
 }
-
-$busybox mount -o remount,rw /system
-$busybox mount -o remount,rw /data
 
 # Only the first 4 has I/O scheduler
 STL=$(ls -d /sys/block/stl*);
@@ -105,7 +102,7 @@ do
 	fi;
 	if [ -e $i/queue/iosched/sync_expire ];
 	then
-		$busybox sync;
+		$busybox sync >/dev/null 2>&1;
 		$busybox echo '500' > $i/queue/iosched/sync_expire ];
 	fi;
 done;
@@ -143,10 +140,6 @@ do
 	$busybox sync >/dev/null 2>&1;
 	$busybox mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k >/dev/null 2>&1; 
 done;
-
-##### Remove dalvik-cache and cache #####
-$busybox rm -rf /data/dalvik-cache/*
-$busybox rm -rf /data/cache/*
 
 ##### Install SU #####
 # Mode 6755 = SetUID, SetGID and 755 access right
