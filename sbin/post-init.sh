@@ -124,6 +124,30 @@ for i in $(ls -d /sys/devices/virtual/bdi/*/read_ahead_kb); do
 	echo '2048' > $i;
 done
 
+# Remount each file system with noatime and nodiratime flags to save battery and CPU cycles
+
+for k in $(mount | grep relatetime | cut -d " " -f3)
+do
+	sync;
+	mount -o remount,noatime,norelatime,nodiratime $k;
+done;
+
+for k in $(mount | grep ext4 | cut -d " " -f3)
+do
+	sync;
+	mount -o remount,ro,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+	sync;
+	tune2fs -f -o journal_data_writeback -O ^has_journal $k;
+	sync;
+	mount -o remount,rw,async,noatime,norelatime,nodiratime,noauto_da_alloc,delalloc,barrier=0,errors=remount-ro,data=writeback,nobh $k;
+done;
+
+for k in $(mount | grep vfat | cut -d " " -f3)
+do
+	sync;
+	mount -o remount,async,noatime,norelatime,nodiratime,errors=remount-ro $k;
+done;
+
 ##### Remove dalvik-cache and cache #####
 $busybox rm -rf /data/dalvik-cache/*
 $busybox rm -rf /data/cache/*
