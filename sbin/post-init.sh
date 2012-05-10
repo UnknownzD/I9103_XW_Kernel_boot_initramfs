@@ -220,6 +220,9 @@ $busybox mkdir -m 000 /data/system/appusagestats/ >/dev/null 2>&1
 #####  Load sysctl configuration #####
 sysctl -p /sysctl.conf >/dev/null 2>&1
 
+##### sleep another 2 seconds before running init.d script #####
+sleep 2
+
 ##### /system/etc/init.d tweak (run custom scripts) #####
 if [ -d '/system/etc/init.d' ]; then
     for file in /system/etc/init.d/* ; do
